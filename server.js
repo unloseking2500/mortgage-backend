@@ -17,9 +17,25 @@ const PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(helmet());
+// Replace your current CORS setup with this:
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || 'https://anatolyworkout.com'
+  origin: process.env.ALLOWED_ORIGIN || 'https://anatolyworkout.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Add CSP headers middleware
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "connect-src 'self' https://mortgage-backend-wl3e.onrender.com; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data:"
+  );
+  next();
+});
 app.use(bodyParser.json());
 
 // Rate limiting
