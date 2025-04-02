@@ -9,6 +9,10 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
+
+// Add this line to trust proxy headers
+app.set('trust proxy', 1); // Trust first proxy (Render.com's load balancer)
+
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
