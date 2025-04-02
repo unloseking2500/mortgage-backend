@@ -46,16 +46,13 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// In the users array (in-memory database), update the user structure:
+// In-memory database (replace with real DB in production)
 const users = [
     {
         id: 1,
         username: 'admin',
-        passwordHash: bcrypt.hashSync('$Admin6790', 10),
-        role: 'admin',
-        fullName: 'William Trinh',
-        email: 'william.q.trinh@gmail.com',
-        upline: null // null for admin
+        passwordHash: bcrypt.hashSync('admin123', 10),
+        role: 'admin'
     }
 ];
 
@@ -112,7 +109,6 @@ function requireAdmin(req, res, next) {
 // API Routes
 
 // Auth endpoints
-// Update the login response to include user details:
 app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
     
@@ -122,46 +118,22 @@ app.post('/api/auth/login', async (req, res) => {
     }
     
     const token = jwt.sign(
-        { 
-            id: user.id, 
-            username: user.username, 
-            role: user.role,
-            fullName: user.fullName,
-            email: user.email
-        },
+        { id: user.id, username: user.username, role: user.role },
         SECRET_KEY,
         { expiresIn: TOKEN_EXPIRY }
     );
     
     res.json({ 
         token,
-        user: { 
-            username: user.username, 
-            role: user.role,
-            fullName: user.fullName,
-            email: user.email,
-            upline: user.upline
-        }
+        user: { username: user.username, role: user.role }
     });
 });
 
-
-// Update the register endpoint
 app.post('/api/auth/register', (req, res) => {
-    const { username, password, fullName, email, upline } = req.body;
+    const { username, password } = req.body;
     
     if (users.some(u => u.username === username)) {
         return res.status(400).json({ error: 'Username already exists' });
-    }
-    
-    // Validate email format
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-    }
-    
-    // Validate upline exists if provided
-    if (upline && !users.some(u => u.username === upline)) {
-        return res.status(400).json({ error: 'Upline does not exist' });
     }
     
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -169,29 +141,22 @@ app.post('/api/auth/register', (req, res) => {
         id: users.length + 1,
         username,
         passwordHash: hashedPassword,
-        role: 'user',
-        fullName,
-        email,
-        upline: upline || null
+        role: 'user'
     };
     
     users.push(newUser);
     res.json({ message: 'Registration successful' });
 });
 
-
 app.get('/api/auth/validate', authenticateToken, (req, res) => {
     res.json({ user: req.user });
 });
 
-// Update the users endpoint
+// User management endpoints
 app.get('/api/users', authenticateToken, requireAdmin, (req, res) => {
     res.json(users.map(u => ({
         username: u.username,
-        role: u.role,
-        fullName: u.fullName,
-        email: u.email,
-        upline: u.upline
+        role: u.role
     })));
 });
 
