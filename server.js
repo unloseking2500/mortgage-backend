@@ -146,7 +146,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 
-// Update the register endpoint:
+// Update the register endpoint
 app.post('/api/auth/register', (req, res) => {
     const { username, password, fullName, email, upline } = req.body;
     
@@ -184,7 +184,7 @@ app.get('/api/auth/validate', authenticateToken, (req, res) => {
     res.json({ user: req.user });
 });
 
-// Update the users endpoint to include new fields:
+// Update the users endpoint
 app.get('/api/users', authenticateToken, requireAdmin, (req, res) => {
     res.json(users.map(u => ({
         username: u.username,
