@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 // Security middleware
 app.use(helmet());
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || 'http://localhost:8080'
+    origin: process.env.ALLOWED_ORIGIN || 'https://anatolyworkout.com/'
 }));
 app.use(bodyParser.json());
 
