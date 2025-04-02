@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Protection - Secure Portal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Auth Styles */
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .auth-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+        }
+        
+        .auth-switch a {
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .alert-danger {
+            background-color: #fdecea;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        
+        /* App Styles (after login) */
+        #app-content {
+            display: none;
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        
+        /* User Management */
+        .user-management {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .user-table th, .user-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .user-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        /* Admin Only */
+        .admin-only {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Container (shown by default) -->
+    <div id="auth-container" class="auth-container">
+        <h2 id="auth-title" class="auth-title">Login</h2>
+        <div id="auth-message"></div>
+        <form id="auth-form" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" id="auth-submit" class="btn btn-primary">Login</button>
+        </form>
+        <div id="auth-switch" class="auth-switch">
+            Don't have an account? <a id="switch-mode">Register here</a>
+        </div>
+    </div>
+
+    <!-- App Content (hidden until login) -->
+    <div id="app-content">
+        <div class="header">
+            <div class="container header-content">
+                <h1>Mortgage Protection Portal</h1>
+                <a href="#" id="logout-btn" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- User Management (admin only) -->
+            <div id="user-management" class="user-management admin-only">
+                <h2>User Management</h2>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list">
+                        <!-- Users will be populated here -->
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 25px;">Add New User</h3>
+                <div class="form-group">
+                    <label for="new-username">Username</label>
+                    <input type="text" id="new-username" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Password</label>
+                    <input type="password" id="new-password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="new-role">Role</label>
+                    <select id="new-role" class="form-control">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button id="add-user-btn" class="btn btn-primary">Add User</button>
+            </div>
+
+            <!-- Main Application Content -->
+            <div id="mortgage-app-content">
+                <!-- Your existing mortgage protection content goes here -->
+                <h2>Mortgage Protection Calculator</h2>
+                <p>Welcome to the secure portal. Your content here...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication State
+        let isLoginMode = true;
+        let currentUser = null;
+
+        // DOM Elements
+        const authContainer = document.getElementById('auth-container');
+        const appContent = document.getElementById('app-content');
+        const authTitle = document.getElementById('auth-title');
+        const authForm = document.getElementById('auth-form');
+        const authSubmit = document.getElementById('auth-submit');
+        const authSwitch = document.getElementById('switch-mode');
+        const authMessage = document.getElementById('auth-message');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userManagement = document.getElementById('user-management');
+        const userList = document.getElementById('user-list');
+        const addUserBtn = document.getElementById('add-user-btn');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                validateToken(token);
+            }
+
+            // Auth form submit
+            authForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (isLoginMode) {
+                    loginUser(username, password);
+                } else {
+                    registerUser(username, password);
+                }
+            });
+
+            // Switch between login/register
+            authSwitch.addEventListener('click', function() {
+                isLoginMode = !isLoginMode;
+                if (isLoginMode) {
+                    authTitle.textContent = 'Login';
+                    authSubmit.textContent = 'Login';
+                    authSwitch.textContent = 'Don\'t have an account? Register here';
+                } else {
+                    authTitle.textContent = 'Register';
+                    authSubmit.textContent = 'Register';
+                    authSwitch.textContent = 'Already have an account? Login here';
+                }
+                authMessage.style.display = 'none';
+            });
+
+            // Logout
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+
+            // Add user (admin only)
+            addUserBtn.addEventListener('click', function() {
+                const username = document.getElementById('new-username').value;
+                const password = document.getElementById('new-password').value;
+                const role = document.getElementById('new-role').value;
+                
+                if (!username || !password) {
+                    showMessage('Username and password are required', 'danger');
+                    return;
+                }
+                
+                addUser(username, password, role);
+            });
+        });
+
+        // API Functions
+        async function loginUser(username, password) {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('authToken', data.token);
+                    currentUser = data.user;
+                    showApp();
+                } else {
+                    showMessage(data.message || 'Login failed', 'danger');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'danger');
+            }
+        }
+
+        async function registerUser(username, password) {
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Registration successful! Please login.', 'success');
+                    isLoginMode = true;
+                    authTitle.textContent = 'Login';
+                    authSubmit.textContent = 'Login';
+                    authSwitch.textContent = 'Don\'t have an account? Register here';
+                } else {
+                    showMessage(data.message || 'Registration failed', 'danger');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'danger');
+            }
+        }
+
+        async function validateToken(token) {
+            try {
+                const response = await fetch('/api/auth/validate', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    showApp();
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                logout();
+            }
+        }
+
+        async function getUsers() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    renderUserList(users);
+                }
+            } catch (error) {
+                console.error('Failed to fetch users:', error);
+            }
+        }
+
+        async function addUser(username, password, role) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('new-username').value = '';
+                    document.getElementById('new-password').value = '';
+                    getUsers();
+                    showMessage('User added successfully', 'success');
+                } else {
+                    const data = await response.json();
+                    showMessage(data.message || 'Failed to add user', 'danger');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'danger');
+            }
+        }
+
+        async function deleteUser(username) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/users/${username}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    getUsers();
+                    showMessage('User deleted successfully', 'success');
+                } else {
+                    const data = await response.json();
+                    showMessage(data.message || 'Failed to delete user', 'danger');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'danger');
+            }
+        }
+
+        // UI Functions
+        function showApp() {
+            authContainer.style.display = 'none';
+            appContent.style.display = 'block';
+            
+            // Show admin features if admin
+            if (currentUser && currentUser.role === 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.style.display = 'block';
+                });
+                getUsers();
+            }
+            
+            // Load your mortgage protection application here
+            // initializeMortgageApp();
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            currentUser = null;
+            authContainer.style.display = 'block';
+            appContent.style.display = 'none';
+            authForm.reset();
+        }
+
+        function showMessage(message, type) {
+            authMessage.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            authMessage.style.display = 'block';
+        }
+
+        function renderUserList(users) {
+            userList.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        ${user.role !== 'admin' ? 
+                            `<button class="action-btn btn-danger" onclick="deleteUser('${user.username}')">Delete</button>` : 
+                            '<em>Protected</em>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Expose deleteUser to global scope for onclick handlers
+        window.deleteUser = deleteUser;
+    </script>
+</body>
+</html>
